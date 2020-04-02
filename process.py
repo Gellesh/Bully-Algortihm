@@ -24,5 +24,38 @@ def Read_config():
     return number_of_machines, machinesdata , time_waited
 
 
-input = sys.argv[1]
-number_of_machines,data,time_waited = Read_config()
+def coordinator(machines):
+    
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.bind("tcp://*:%s" % "8801")
+    while True:
+        message = socket.recv()
+
+        machineNo = int(message)
+
+        port = machines[machineNo]
+
+        socket.send("Recieved msg from client with id:" + str(machineNo))
+    
+    
+    
+    
+def procces(machines, machineNo):
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect ("tcp://127.0.0.1:%s" % str(machines[0]))
+    while True:
+        socket.send(machineNo)
+
+        message = socket.recv()
+        print(message)
+    
+machineNo = sys.argv[1]
+number_of_machines,machinesdata,time_waited = Read_config()
+
+
+if machineNo == 1:
+    coordinator(machinesdata)
+else:
+    procces(machinesdata, machineNo)
